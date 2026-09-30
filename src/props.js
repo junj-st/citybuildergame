@@ -1,6 +1,7 @@
 // Decorative props (trees, lights, utility blocks) rendered with instancing.
 import * as THREE from 'three';
 import { SIZE, MAXH } from './world.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { radialTexture } from './textures.js';
 
 export const PROP_TYPES = [
@@ -12,7 +13,17 @@ export const PROP_TYPES = [
   { id: 'tank', name: 'Water tank' },
   { id: 'ac', name: 'AC unit' },
   { id: 'solar', name: 'Solar panel' },
+  // Appended so existing saves keep their prop indices.
+  { id: 'palm', name: 'Palm tree' },
+  { id: 'flowers', name: 'Flower bed' },
+  { id: 'bench', name: 'Bench' },
+  { id: 'fountain', name: 'Fountain' },
+  { id: 'flag', name: 'Flagpole' },
+  { id: 'billboard', name: 'Billboard' },
+  { id: 'busstop', name: 'Bus stop' },
 ];
+
+const ORGANIC = new Set(['tree', 'pine', 'palm']);
 
 const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -34,6 +45,14 @@ export class PropRenderer {
       tankRoof: std('#4a3a2c'),
       ac: std('#c9ccce', { roughness: 0.6 }),
       solar: std('#1d2d4a', { roughness: 0.25, metalness: 0.5 }),
+      palmBark: std('#8a6f4d'),
+      bloom: std('#ffffff', { flatShading: true, roughness: 0.7 }),
+      stone: std('#c4bdb0', { roughness: 0.9 }),
+      water: std('#5fa8c9', { roughness: 0.1, metalness: 0.1, emissive: '#1b4d66', emissiveIntensity: 0.25 }),
+      cloth: std('#ffffff', { roughness: 0.9 }),
+      sign: std('#ffffff', { roughness: 0.5, emissive: '#fff1d6', emissiveIntensity: 0 }),
+      shelter: std('#bcd6e0', { roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.45, depthWrite: false }),
+      busSign: std('#2b6fc7', { emissive: '#2b6fc7', emissiveIntensity: 0.1 }),
     };
     this.poolMat = new THREE.MeshBasicMaterial({
       map: radialTexture('rgba(255,210,140,1)', 'rgba(255,190,110,0)'),
@@ -95,6 +114,58 @@ export class PropRenderer {
       { geo: at(new THREE.BoxGeometry(0.03, 0.08, 0.03), -0.35, 0.04, -0.12), mat: M.metal },
       { geo: at(new THREE.BoxGeometry(0.03, 0.08, 0.03), 0.35, 0.04, -0.12), mat: M.metal },
     ];
+    // Palm: slim trunk topped by drooping fronds.
+    const fronds = [];
+    for (let k = 0; k < 7; k++) {
+      const f = new THREE.BoxGeometry(0.36, 0.015, 0.09);
+      f.translate(0.18, 0, 0); f.rotateZ(-0.4 - (k % 2) * 0.15); f.rotateY(k * Math.PI * 2 / 7); f.translate(0, 0.74, 0);
+      fronds.push(f);
+    }
+    P.palm = [
+      { geo: at(new THREE.CylinderGeometry(0.028, 0.045, 0.76, 6), 0, 0.38, 0), mat: M.palmBark },
+      { geo: mergeGeometries(fronds), mat: M.leaf, tint: ['#4f8f3a', '#5f9e43', '#3f7f34'] },
+    ];
+    const blooms = [];
+    for (let k = 0; k < 6; k++) blooms.push(at(new THREE.IcosahedronGeometry(0.06, 0), -0.25 + k * 0.1, 0.22 + (k % 2) * 0.03, (k % 2) * 0.06 - 0.03));
+    P.flowers = [
+      { geo: at(new THREE.BoxGeometry(0.7, 0.14, 0.3), 0, 0.07, 0), mat: M.stone },
+      { geo: at(new THREE.BoxGeometry(0.64, 0.06, 0.24), 0, 0.16, 0), mat: M.hedge },
+      { geo: mergeGeometries(blooms), mat: M.bloom, tint: ['#e0506a', '#f2c14e', '#b56ad8', '#f08a3c', '#f4f0e8'] },
+    ];
+    P.bench = [
+      { geo: at(new THREE.BoxGeometry(0.6, 0.03, 0.18), 0, 0.16, 0.2), mat: M.wood },
+      { geo: at(new THREE.BoxGeometry(0.6, 0.12, 0.03), 0, 0.26, 0.12), mat: M.wood },
+      { geo: at(new THREE.BoxGeometry(0.03, 0.16, 0.18), -0.26, 0.08, 0.2), mat: M.darkMetal },
+      { geo: at(new THREE.BoxGeometry(0.03, 0.16, 0.18), 0.26, 0.08, 0.2), mat: M.darkMetal },
+    ];
+    P.fountain = [
+      { geo: at(new THREE.CylinderGeometry(0.42, 0.44, 0.14, 20), 0, 0.07, 0), mat: M.stone },
+      { geo: at(new THREE.CylinderGeometry(0.37, 0.37, 0.02, 20), 0, 0.13, 0), mat: M.water },
+      { geo: at(new THREE.CylinderGeometry(0.05, 0.07, 0.3, 10), 0, 0.25, 0), mat: M.stone },
+      { geo: at(new THREE.CylinderGeometry(0.16, 0.08, 0.06, 14), 0, 0.41, 0), mat: M.stone },
+      { geo: at(new THREE.ConeGeometry(0.05, 0.16, 8), 0, 0.51, 0), mat: M.water, noShadow: true },
+    ];
+    P.flag = [
+      { geo: at(new THREE.BoxGeometry(0.1, 0.04, 0.1), -0.3, 0.02, 0), mat: M.stone },
+      { geo: at(new THREE.CylinderGeometry(0.012, 0.018, 1.1, 6), -0.3, 0.55, 0), mat: M.metal },
+      { geo: at(new THREE.BoxGeometry(0.32, 0.19, 0.008), -0.13, 0.98, 0), mat: M.cloth, tint: ['#c8102e', '#1f4fa3', '#f2b705', '#2e8b57', '#f4f0e8'] },
+    ];
+    P.billboard = [
+      { geo: at(new THREE.BoxGeometry(0.04, 0.62, 0.04), -0.3, 0.31, 0), mat: M.darkMetal },
+      { geo: at(new THREE.BoxGeometry(0.04, 0.62, 0.04), 0.3, 0.31, 0), mat: M.darkMetal },
+      { geo: at(new THREE.BoxGeometry(0.84, 0.42, 0.04), 0, 0.8, 0), mat: M.darkMetal },
+      { geo: at(new THREE.BoxGeometry(0.78, 0.36, 0.01), 0, 0.8, 0.025), mat: M.sign, tint: ['#ff9a2e', '#3aa0d8', '#e04a6a', '#7ac74f', '#f2c14e'] },
+    ];
+    const posts = [];
+    for (const [px, pz] of [[-0.37, -0.15], [0.37, -0.15], [-0.37, 0.15], [0.37, 0.15]]) posts.push(at(new THREE.BoxGeometry(0.03, 0.5, 0.03), px, 0.25, pz));
+    P.busstop = [
+      { geo: mergeGeometries(posts), mat: M.darkMetal },
+      { geo: at(new THREE.BoxGeometry(0.84, 0.03, 0.4), 0, 0.515, 0), mat: M.darkMetal },
+      { geo: at(new THREE.BoxGeometry(0.74, 0.36, 0.015), 0, 0.3, -0.15), mat: M.shelter, noShadow: true },
+      { geo: at(new THREE.BoxGeometry(0.5, 0.03, 0.12), 0, 0.15, -0.07), mat: M.wood },
+      { geo: at(new THREE.CylinderGeometry(0.01, 0.01, 0.7, 6), 0.46, 0.35, 0.15), mat: M.metal },
+      { geo: at(new THREE.BoxGeometry(0.02, 0.12, 0.12), 0.46, 0.66, 0.15), mat: M.busSign },
+    ];
     return PROP_TYPES.map(t => P[t.id]);
   }
 
@@ -110,6 +181,9 @@ export class PropRenderer {
     this.night = k;
     this.mats.bulb.emissiveIntensity = 0.15 + k * 6;
     this.poolMat.opacity = k * 0.75;
+    this.mats.sign.emissiveIntensity = k * 0.3;
+    this.mats.busSign.emissiveIntensity = 0.1 + k * 1.5;
+    this.mats.water.emissiveIntensity = 0.25 + k * 0.6;
   }
 
   update(dt) {
@@ -136,7 +210,7 @@ export class PropRenderer {
       const id = PROP_TYPES[t].id;
       const matrices = list.map(([x, y, z, r]) => {
         const hsh = ((x * 73856093) ^ (y * 19349663) ^ (z * 83492791)) >>> 0;
-        const organic = id === 'tree' || id === 'pine';
+        const organic = ORGANIC.has(id);
         const sc = organic ? 0.8 + (hsh % 100) / 250 : 1;
         const ang = organic ? (hsh % 628) / 100 : r * Math.PI / 2;
         q.setFromAxisAngle(up, ang);

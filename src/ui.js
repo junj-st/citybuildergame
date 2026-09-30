@@ -17,13 +17,16 @@ const ICONS = {
 };
 const svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
 
-const PROP_EMOJI = { tree: '🌳', pine: '🌲', hedge: '🟩', lamp: '💡', antenna: '📡', tank: '🛢️', ac: '❄️', solar: '🔋' };
+const PROP_EMOJI = {
+  tree: '🌳', pine: '🌲', hedge: '🟩', lamp: '💡', antenna: '📡', tank: '🛢️', ac: '❄️', solar: '🔋',
+  palm: '🌴', flowers: '🌷', bench: '🪑', fountain: '⛲', flag: '🚩', billboard: '🪧', busstop: '🚏',
+};
 const GROUND_COLORS = ['#6d8c4a', '#3e4045', '#bdb6a8', '#2d5a73', '#d6c498'];
 
 const HINTS = {
-  build: ['<kbd>Drag</kbd> on any surface to select an area', 'Pull the <b>orange arrow</b> or press <kbd>E</kbd>/<kbd>Q</kbd> to extrude or dig', '<kbd>1</kbd>–<kbd>6</kbd> pick a block style · <kbd>Esc</kbd> clears'],
+  build: ['<kbd>Drag</kbd> on any surface to select an area', 'Pull the <b>orange arrow</b> or press <kbd>E</kbd>/<kbd>Q</kbd> to extrude or dig', '<kbd>1</kbd>–<kbd>9</kbd> pick a block style · <kbd>Esc</kbd> clears'],
   paint: ['<kbd>Click</kbd> or drag over blocks to repaint', '<kbd>Shift</kbd>+click repaints a whole building'],
-  prop: ['<kbd>Click</kbd> a flat surface to place · drag to scatter', '<kbd>R</kbd> rotates · <kbd>1</kbd>–<kbd>8</kbd> pick a detail'],
+  prop: ['<kbd>Click</kbd> a flat surface to place · drag to scatter', '<kbd>R</kbd> rotates · <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> pick a detail · more in the palette'],
   ground: ['<kbd>Drag</kbd> a rectangle to paint the ground', 'Roads connect automatically and get traffic'],
   erase: ['<kbd>Click</kbd> or drag to remove blocks and details'],
 };

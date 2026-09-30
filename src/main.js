@@ -15,8 +15,10 @@ import { UI } from './ui.js';
 import { generateCity } from './citygen.js';
 import { STYLES } from './textures.js';
 
-const SAVE_KEY = 'tinyopolis-city-v1';
-const SETTINGS_KEY = 'tinyopolis-settings-v1';
+const SAVE_KEY = 'citybuildergame-city-v1';
+const LEGACY_SAVE_KEY = 'tinyopolis-city-v1';
+const SETTINGS_KEY = 'citybuildergame-settings-v1';
+const LEGACY_SETTINGS_KEY = 'tinyopolis-settings-v1';
 
 // ---------- renderer / scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
@@ -65,13 +67,13 @@ env.listeners.push(e => {
 // ---------- load ----------
 let loaded = false;
 try {
-  const raw = localStorage.getItem(SAVE_KEY);
+  const raw = localStorage.getItem(SAVE_KEY) ?? localStorage.getItem(LEGACY_SAVE_KEY);
   if (raw) { world.load(JSON.parse(raw)); loaded = true; }
 } catch (err) { console.warn('Could not load saved city', err); }
 if (!loaded) generateCity(world, 1337);
 
 let settings = null;
-try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch { settings = null; }
+try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? localStorage.getItem(LEGACY_SETTINGS_KEY) ?? 'null'); } catch { settings = null; }
 if (settings) {
   if (settings.env) env.set(settings.env);
   if (settings.post) post.apply(settings.post);
@@ -125,7 +127,7 @@ function confirmReset() {
 }
 app.saveFile = () => {
   const blob = new Blob([JSON.stringify(world.toJSON())], { type: 'application/json' });
-  download(URL.createObjectURL(blob), `tinyopolis-${stamp()}.json`);
+  download(URL.createObjectURL(blob), `citybuildergame-${stamp()}.json`);
   ui.toast('City saved');
 };
 app.loadFile = async (file) => {
@@ -180,8 +182,8 @@ window.addEventListener('keydown', e => {
   }
   const tool = TOOL_LIST.find(t => t.key === e.key.toUpperCase());
   if (tool) { tools.setTool(tool.id); return; }
-  if (/^Digit[1-9]$/.test(e.code)) {
-    const n = +e.code.slice(5) - 1;
+  if (/^Digit[0-9]$/.test(e.code)) {
+    const n = (+e.code.slice(5) + 9) % 10; // 1..9 -> 0..8, 0 -> 9
     if ((tools.tool === 'build' || tools.tool === 'paint') && n < STYLES.length) { tools.style = n; tools.emit(); }
     else if (tools.tool === 'prop' && n < PROP_TYPES.length) tools.setPropType(n);
     else if (tools.tool === 'ground' && n < 5) { tools.groundType = n; tools.emit(); }
@@ -272,7 +274,7 @@ function frame() {
 
   if (wantShot) {
     wantShot = false;
-    renderer.domElement.toBlob(b => { if (b) { download(URL.createObjectURL(b), `tinyopolis-${stamp()}.png`); ui.toast('Screenshot saved'); } });
+    renderer.domElement.toBlob(b => { if (b) { download(URL.createObjectURL(b), `citybuildergame-${stamp()}.png`); ui.toast('Screenshot saved'); } });
   }
 }
 frame();

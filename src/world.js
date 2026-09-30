@@ -119,7 +119,7 @@ export class World {
 
   // --- serialization (run-length encoded) ---
   toJSON() {
-    return { app: 'tinyopolis', v: 1, size: SIZE, maxh: MAXH,
+    return { app: 'citybuildergame', v: 1, size: SIZE, maxh: MAXH,
       blocks: rle(this.blocks), props: rle(this.props), rot: rle(this.rot), ground: rle(this.ground) };
   }
   load(data) {

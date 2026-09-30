@@ -54,7 +54,7 @@ body.hide-ui #hud, body.walking #hud { display: none; }
 /* Bottom palette */
 #bottom { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
 #bottom > * { pointer-events: auto; }
-#palette { padding: 10px 12px 12px; max-width: calc(100vw - 32px); }
+#palette { padding: 10px 12px 12px; max-width: min(620px, calc(100vw - 32px)); }
 .pal-head { display: flex; justify-content: space-between; gap: 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 2px 8px; }
 .pal-head #pal-title { color: var(--text); font-weight: 600; }
 #pal-items { display: flex; gap: 8px; overflow-x: auto; }

@@ -1,4 +1,4 @@
-// Procedural canvas textures: facade atlases for the six block styles, roofs, and ground tiles.
+// Procedural canvas textures: facade atlases for the block styles, roofs, and ground tiles.
 import * as THREE from 'three';
 
 export function rng(seed) {
@@ -19,6 +19,9 @@ export const STYLES = [
   { name: 'Modern', kind: 'ribbon', wall: '#eeede8', trim: '#d9d8d2', glass: '#243039', roof: '#a9a8a2', awning: '#e0a43a' },
   { name: 'Steel', kind: 'vertical', wall: '#3b3d42', trim: '#9a7f55', glass: '#1b222b', roof: '#4d4e51', awning: '#8c2f3a' },
   { name: 'Classic', kind: 'arched', wall: '#dcc59c', trim: '#f3e9d2', glass: '#30353c', roof: '#8f806a', awning: '#5a3f7a' },
+  { name: 'Timber', kind: 'siding', wall: '#8a6a4a', trim: '#f1e8d6', glass: '#2a3138', roof: '#5b4636', awning: '#3f6b4a' },
+  { name: 'Stucco', kind: 'shutters', wall: '#e8b99a', trim: '#fbf3e6', glass: '#2c343c', roof: '#b0643f', awning: '#2f7f86' },
+  { name: 'Deco', kind: 'deco', wall: '#e6dcc6', trim: '#b8904a', glass: '#1f2a33', roof: '#8d8676', awning: '#1f4f5a' },
 ];
 
 // Atlas layout (4 x 2 cells of C px): row 0 = facade variants 0..2 + storefront, row 1 col 0 = spare.
@@ -59,6 +62,15 @@ function windowLayout(style) {
         break;
       case 'arched':
         for (let c = 0; c < 3; c++) out.push({ x: c * C / 3 + 20, y: top + 18, w: C / 3 - 40, h: fh - 34, floor: f, arch: true });
+        break;
+      case 'siding':
+        for (let c = 0; c < 2; c++) out.push({ x: c * C / 2 + 40, y: top + 20, w: C / 2 - 80, h: fh - 40, floor: f });
+        break;
+      case 'shutters':
+        for (let c = 0; c < 3; c++) out.push({ x: c * C / 3 + 24, y: top + 18, w: C / 3 - 48, h: fh - 36, floor: f, shutters: true });
+        break;
+      case 'deco':
+        for (let c = 0; c < 4; c++) out.push({ x: c * C / 4 + 18, y: top + 10, w: C / 4 - 36, h: fh - 20, floor: f });
         break;
     }
   }
@@ -103,6 +115,28 @@ function drawWall(ctx, s, x0, y0, r, rows = 3) {
   } else if (s.kind === 'vertical') {
     ctx.fillStyle = s.trim;
     for (let c = 0; c <= 6; c++) ctx.fillRect(x0 + c * C / 6 - 3, y0, 6, C);
+  } else if (s.kind === 'siding') {
+    // Horizontal clapboards with a light top edge and a shadowed lower edge.
+    for (let y = 0; y < C; y += 10) {
+      ctx.fillStyle = 'rgba(255,235,200,0.10)'; ctx.fillRect(x0, y0 + y, C, 2);
+      ctx.fillStyle = 'rgba(40,20,5,0.35)'; ctx.fillRect(x0, y0 + y + 8, C, 2);
+    }
+    ctx.fillStyle = s.trim;
+    ctx.fillRect(x0, y0, 6, C); ctx.fillRect(x0 + C - 6, y0, 6, C);
+  } else if (s.kind === 'shutters') {
+    noise(ctx, x0, y0, C, C, r, 0.18, '150,80,50', '255,240,220');
+    for (let f = 0; f < rows; f++) { ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(x0, y0 + f * fh + fh - 5, C, 4); }
+  } else if (s.kind === 'deco') {
+    // Fluted pilasters between window bays and gilded floor bands.
+    for (let c = 0; c <= 4; c++) {
+      const px = x0 + c * C / 4;
+      ctx.fillStyle = shade(s.wall, 1.06); ctx.fillRect(px - 9, y0, 18, C);
+      ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(px - 1, y0, 2, C);
+    }
+    for (let f = 0; f < rows; f++) {
+      ctx.fillStyle = s.trim; ctx.fillRect(x0, y0 + f * fh + fh - 7, C, 4);
+      ctx.fillStyle = 'rgba(0,0,0,0.10)'; ctx.fillRect(x0, y0 + f * fh + fh - 3, C, 2);
+    }
   } else if (s.kind === 'curtain') {
     for (let f = 0; f < rows; f++) { ctx.fillStyle = '#16222a'; ctx.fillRect(x0, y0 + f * fh + fh - 11, C, 8); }
   }
@@ -130,7 +164,15 @@ function drawFacade(ctxs, s, col, row, seed, storefront) {
     g.addColorStop(1, shade(s.glass, 0.8));
     alb.fillStyle = g; pathWindow(alb, w, x0, y0); alb.fill();
     if (curtain) { alb.fillStyle = 'rgba(225,210,185,0.55)'; alb.fillRect(x0 + w.x, y0 + w.y, w.w, w.h * (0.3 + r() * 0.5)); }
-    if (s.kind === 'punched' || s.kind === 'brick' || s.kind === 'arched') {
+    if (w.shutters) {
+      const sw = w.w * 0.45;
+      for (const sx of [w.x - sw - 3, w.x + w.w + 3]) {
+        alb.fillStyle = s.awning; alb.fillRect(x0 + sx, y0 + w.y, sw, w.h);
+        alb.fillStyle = 'rgba(0,0,0,0.22)';
+        for (let yy = 4; yy < w.h; yy += 5) alb.fillRect(x0 + sx + 2, y0 + w.y + yy, sw - 4, 1.5);
+      }
+    }
+    if (s.kind === 'punched' || s.kind === 'brick' || s.kind === 'arched' || s.kind === 'siding' || s.kind === 'shutters') {
       alb.strokeStyle = s.trim; alb.lineWidth = 4; pathWindow(alb, w, x0, y0); alb.stroke();
       alb.fillStyle = s.trim; alb.fillRect(x0 + w.x - 5, y0 + w.y + w.h, w.w + 10, 5);
       alb.fillStyle = 'rgba(0,0,0,0.25)'; alb.fillRect(x0 + w.x + w.w / 2 - 1, y0 + w.y, 2, w.h);
@@ -138,7 +180,7 @@ function drawFacade(ctxs, s, col, row, seed, storefront) {
     rough.fillStyle = '#262626'; pathWindow(rough, w, x0, y0); rough.fill();
 
     // emissive: lit windows at night
-    const officeLike = s.kind === 'curtain' || s.kind === 'ribbon' || s.kind === 'vertical';
+    const officeLike = s.kind === 'curtain' || s.kind === 'ribbon' || s.kind === 'vertical' || s.kind === 'deco';
     const lit = officeLike ? (floorLit[w.floor] ? r() < 0.85 : r() < 0.12) : r() < 0.42;
     if (lit) {
       const c = LIT[Math.floor(r() * LIT.length)];

@@ -1,5 +1,6 @@
 {
-  "name": "tinyopolis",
+  "name": "citybuildergame",
+  "description": "citybuildergame: a relaxing voxel city-builder sandbox that runs in the browser",
   "private": true,
   "version": "0.1.0",
   "type": "module",
