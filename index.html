@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tinyopolis</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect x=%272%27 y=%276%27 width=%275%27 height=%279%27 fill=%27%23ff9a2e%27/%3E%3Crect x=%278%27 y=%272%27 width=%276%27 height=%2713%27 fill=%27%23ffc27a%27/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <div id="hud">
+      <header id="brand">
+        <div class="wordmark">tinyopolis</div>
+        <div id="stats">0 blocks</div>
+      </header>
+
+      <nav id="toolbar" aria-label="Tools"></nav>
+
+      <div id="bottom">
+        <div id="selinfo" class="chip hidden"></div>
+        <div id="palette" class="glass">
+          <div class="pal-head"><span id="pal-title">Blocks</span><span id="pal-sub"></span></div>
+          <div id="pal-items"></div>
+        </div>
+      </div>
+
+      <aside id="panel">
+        <button id="panel-toggle" title="Settings">
+          <svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        </button>
+        <div id="panel-body">
+          <section>
+            <h3>Environment</h3>
+            <label class="row"><span>Time</span><output id="time-out">16:30</output></label>
+            <input type="range" id="time" min="0" max="24" step="0.05" value="16.5" />
+            <div class="chips" id="time-presets">
+              <button data-t="6.4">Dawn</button><button data-t="12">Noon</button><button data-t="17.7">Sunset</button><button data-t="22.5">Night</button>
+            </div>
+            <label class="row toggle"><span>Day cycle</span><input type="checkbox" id="cycle" /><i></i></label>
+            <label class="row"><span>Clouds</span></label>
+            <input type="range" id="clouds" min="0" max="1" step="0.01" value="0.35" />
+            <label class="row"><span>Fog</span></label>
+            <input type="range" id="fog" min="0" max="1" step="0.01" value="0.15" />
+            <label class="row toggle"><span>Rain</span><input type="checkbox" id="rain" /><i></i></label>
+          </section>
+          <section>
+            <h3>Lens</h3>
+            <label class="row toggle"><span>Miniature (tilt-shift)</span><input type="checkbox" id="mini" /><i></i></label>
+            <input type="range" id="mini-str" min="2" max="18" step="0.5" value="9" />
+            <label class="row toggle"><span>Depth of field</span><input type="checkbox" id="dof" /><i></i></label>
+            <input type="range" id="aperture" min="0.05" max="1" step="0.01" value="0.4" />
+            <label class="row"><span>Bloom</span></label>
+            <input type="range" id="bloom" min="0" max="1.5" step="0.01" value="0.5" />
+            <label class="row"><span>Filter</span>
+              <select id="filter"><option>None</option><option>Vivid</option><option>Film</option><option>Noir</option><option>Warm</option><option>Cool</option></select>
+            </label>
+          </section>
+          <section>
+            <h3>World</h3>
+            <label class="row toggle"><span>Grid</span><input type="checkbox" id="grid" checked /><i></i></label>
+            <label class="row toggle"><span>Traffic</span><input type="checkbox" id="traffic" checked /><i></i></label>
+            <label class="row toggle"><span>Sound</span><input type="checkbox" id="sound" checked /><i></i></label>
+          </section>
+          <section>
+            <h3>City</h3>
+            <div class="btns">
+              <button id="btn-new">New empty</button>
+              <button id="btn-gen">Generate</button>
+              <button id="btn-save">Save file</button>
+              <button id="btn-load">Load file</button>
+              <button id="btn-shot" class="wide">Screenshot (K)</button>
+            </div>
+            <input type="file" id="file" accept=".json,application/json" hidden />
+          </section>
+        </div>
+      </aside>
+
+      <div id="hint"></div>
+      <div id="toast"></div>
+    </div>
+    <div id="walkhint" class="hidden">
+      <div><b>Walking</b> · WASD to move · Shift to run · mouse to look · <b>Esc</b> to return</div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
